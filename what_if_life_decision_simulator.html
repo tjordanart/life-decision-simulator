@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What If? — Life Decision Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#070a12',
+                            900: '#0c1120',
+                            800: '#141c33',
+                            700: '#1e294b',
+                            600: '#2b3964',
+                        },
+                        electric: {
+                            blue: '#38bdf8',
+                            cyan: '#06b6d4',
+                            indigo: '#6366f1',
+                            purple: '#a855f7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #070a12;
+            color: #f1f5f9;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c1120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e294b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+
+        /* Gradient Glow Effects */
+        .glow-purple {
+            box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.25);
+        }
+        .glow-blue {
+            box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.25);
+        }
+        .glow-red {
+            box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Custom Styled Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #1e294b;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+            border: 2px solid #ffffff;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #a855f7;
+            box-shadow: 0 0 16px rgba(168, 85, 247, 0.9);
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+            border: 2px solid #ffffff;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        .glass-card {
+            background: rgba(20, 28, 51, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(168, 85, 247, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-navy-950 text-slate-100 flex flex-col justify-between antialiased selection:bg-purple-500 selection:text-white">
+
+    <!-- HEADER NAVBAR -->
+    <header class="border-b border-slate-800/80 bg-navy-900/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
+                    <i class="fa-solid fa-sliders text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent leading-tight">
+                        What If? <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-800/60 ml-1">Life Simulator</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Quantitative Life & Financial Decision Dashboard</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Preset Dropdown / Buttons -->
+                <div class="hidden md:flex items-center space-x-1.5 bg-navy-950/80 p-1 rounded-lg border border-slate-800 text-xs">
+                    <span class="text-slate-400 px-2 font-medium">Presets:</span>
+                    <button onclick="loadPreset('standard')" class="px-2.5 py-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition">Standard 9-to-5</button>
+                    <button onclick="loadPreset('parttime')" class="px-2.5 py-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition">Balanced Part-time</button>
+                    <button onclick="loadPreset('hustle')" class="px-2.5 py-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition">High Hustle</button>
+                    <button onclick="loadPreset('fire')" class="px-2.5 py-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition">Frugal Saver</button>
+                </div>
+
+                <button onclick="resetToDefaults()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition font-medium">
+                    <i class="fa-solid fa-rotate-left text-slate-400"></i>
+                    <span>Reset</span>
+                </button>
+
+                <button onclick="shareScenario()" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-1.5 rounded-lg flex items-center space-x-1.5 transition font-semibold shadow-md shadow-purple-600/30">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+
+        <!-- Banner / Quick Explainer -->
+        <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-800 bg-gradient-to-r from-navy-900 via-navy-800 to-indigo-950/40 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <h2 class="text-base font-semibold text-white">Interactive Scenario Modeling</h2>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+                        Adjust work hours, hourly wage, expenses, and taxes to instantly see the real trade-off between monthly net cash flow, annual earnings, and weekly disposable free time.
+                    </p>
+                </div>
+
+                <!-- Scenario Baseline Controls -->
+                <div class="flex items-center space-x-2 shrink-0 bg-navy-950/60 p-2 rounded-xl border border-slate-800">
+                    <button id="setBaselineBtn" onclick="setAsBaseline()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-2 rounded-lg font-medium transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>Lock Current as Baseline</span>
+                    </button>
+                    <button id="clearBaselineBtn" onclick="clearBaseline()" class="hidden text-xs text-slate-400 hover:text-slate-200 px-2 py-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP STAT CARDS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Card 1: Monthly Gross Income -->
+            <div class="glass-card rounded-xl p-4 sm:p-5 border border-slate-800/80 glass-card-hover relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Gross Monthly Income</p>
+                        <h3 id="cardGrossMonthly" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">$4,550</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                        <i class="fa-solid fa-wallet text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs">
+                    <span id="cardGrossAnnual" class="text-slate-400 font-medium">$54,600 / year</span>
+                    <span id="deltaGross" class="hidden text-xs font-semibold px-2 py-0.5 rounded">--</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Estimated Net Leftover (Before/After Tax) -->
+            <div id="cardLeftoverContainer" class="glass-card rounded-xl p-4 sm:p-5 border border-slate-800/80 glass-card-hover relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Estimated Monthly Savings</p>
+                        <h3 id="cardLeftover" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1">$1,140</h3>
+                    </div>
+                    <div id="leftoverIconBg" class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                        <i id="leftoverIcon" class="fa-solid fa-piggy-bank text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs">
+                    <span id="cardSavingsRate" class="text-slate-400 font-medium">Savings Rate: 25.1%</span>
+                    <span id="deltaLeftover" class="hidden text-xs font-semibold px-2 py-0.5 rounded">--</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Free Time Per Week -->
+            <div class="glass-card rounded-xl p-4 sm:p-5 border border-slate-800/80 glass-card-hover relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Weekly Free Time</p>
+                        <h3 id="cardFreeHours" class="text-2xl sm:text-3xl font-extrabold text-purple-300 mt-1">63 hrs/wk</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                        <i class="fa-solid fa-couch text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs">
+                    <span id="cardFreePercent" class="text-slate-400 font-medium">37.5% of week</span>
+                    <span id="deltaFreeHours" class="hidden text-xs font-semibold px-2 py-0.5 rounded">--</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Effective Hourly Return -->
+            <div class="glass-card rounded-xl p-4 sm:p-5 border border-slate-800/80 glass-card-hover relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Net Hourly Profit</p>
+                        <h3 id="cardNetHourly" class="text-2xl sm:text-3xl font-extrabold text-cyan-300 mt-1">$7.52 / hr</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                        <i class="fa-solid fa-chart-line text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs">
+                    <span class="text-slate-400 font-medium">Leftover ÷ Work Hours</span>
+                    <span id="deltaNetHourly" class="hidden text-xs font-semibold px-2 py-0.5 rounded">--</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MAIN DASHBOARD SPLIT: CONTROLS vs VISUALIZATIONS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT PANEL: CONTROLS & SLIDERS (5 COLS) -->
+            <div class="lg:col-span-5 space-y-5">
+                <div class="glass-card rounded-2xl p-5 border border-slate-800/80 space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-sliders text-purple-400"></i>
+                            <span>Scenario Parameters</span>
+                        </h3>
+                        <span class="text-xs text-slate-400">Live Adjustment</span>
+                    </div>
+
+                    <!-- CONTROL 1: HOURLY PAY -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="inputPay" class="text-xs font-semibold text-slate-300 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-dollar-sign text-emerald-400"></i>
+                                <span>Hourly Pay Rate</span>
+                            </label>
+                            <div class="flex items-center space-x-1 bg-navy-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                                <span class="text-slate-400 text-xs">$</span>
+                                <input type="number" id="numPay" min="10" max="200" step="1" value="30" class="w-16 bg-transparent text-right font-bold text-emerald-400 text-sm focus:outline-none">
+                                <span class="text-slate-500 text-xs">/hr</span>
+                            </div>
+                        </div>
+                        <input type="range" id="inputPay" min="10" max="150" step="0.5" value="30" class="w-full">
+                        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                            <span>$10/hr</span>
+                            <span>$30</span>
+                            <span>$75</span>
+                            <span>$150/hr</span>
+                        </div>
+                    </div>
+
+                    <!-- CONTROL 2: HOURS WORKED PER WEEK -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="inputHours" class="text-xs font-semibold text-slate-300 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-briefcase text-blue-400"></i>
+                                <span>Weekly Work Hours</span>
+                            </label>
+                            <div class="flex items-center space-x-1 bg-navy-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                                <input type="number" id="numHours" min="5" max="80" step="1" value="35" class="w-12 bg-transparent text-right font-bold text-blue-400 text-sm focus:outline-none">
+                                <span class="text-slate-500 text-xs">hrs</span>
+                            </div>
+                        </div>
+                        <input type="range" id="inputHours" min="5" max="80" step="1" value="35" class="w-full">
+                        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                            <span>5 hrs (Part-time)</span>
+                            <span>35-40 hrs</span>
+                            <span>80 hrs (Extreme)</span>
+                        </div>
+                    </div>
+
+                    <!-- CONTROL 3: MONTHLY EXPENSES -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="inputExpenses" class="text-xs font-semibold text-slate-300 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-receipt text-rose-400"></i>
+                                <span>Monthly Living Expenses</span>
+                            </label>
+                            <div class="flex items-center space-x-1 bg-navy-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                                <span class="text-slate-400 text-xs">$</span>
+                                <input type="number" id="numExpenses" min="500" max="12000" step="50" value="2500" class="w-20 bg-transparent text-right font-bold text-rose-400 text-sm focus:outline-none">
+                                <span class="text-slate-500 text-xs">/mo</span>
+                            </div>
+                        </div>
+                        <input type="range" id="inputExpenses" min="500" max="8000" step="50" value="2500" class="w-full">
+                        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                            <span>$500</span>
+                            <span>$2,500</span>
+                            <span>$5,000</span>
+                            <span>$8,000</span>
+                        </div>
+                    </div>
+
+                    <!-- CONTROL 4: ESTIMATED TAX RATE ADJUSTER -->
+                    <div class="space-y-2 pt-2 border-t border-slate-800/80">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <label for="inputTax" class="text-xs font-semibold text-slate-300 flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-building-columns text-purple-400"></i>
+                                    <span>Estimated Income Tax & Deductions</span>
+                                </label>
+                            </div>
+                            <span id="taxDisplayValue" class="text-xs font-bold text-purple-300 bg-purple-950/80 border border-purple-800/60 px-2 py-0.5 rounded">20%</span>
+                        </div>
+                        <input type="range" id="inputTax" min="0" max="45" step="1" value="20" class="w-full">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>0% (Gross Only)</span>
+                            <span>20% (Avg US)</span>
+                            <span>35% (High Tax Zone)</span>
+                        </div>
+                    </div>
+
+                    <!-- CONTROL 5: LIFESTYLE / SLEEP & CHORES ADJUSTER -->
+                    <div class="space-y-2 pt-2 border-t border-slate-800/80">
+                        <div class="flex justify-between items-center">
+                            <label for="inputSleep" class="text-xs font-semibold text-slate-300 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-bed text-indigo-400"></i>
+                                <span>Sleep & Daily Essentials</span>
+                            </label>
+                            <span id="sleepDisplayValue" class="text-xs font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-800/60 px-2 py-0.5 rounded">70 hrs/wk (10h/day)</span>
+                        </div>
+                        <input type="range" id="inputSleep" min="42" max="98" step="1" value="70" class="w-full">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>6h/day</span>
+                            <span>10h/day (Sleep + Commute + Cooking)</span>
+                            <span>14h/day</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- QUICK PRESET CARDS SELECTOR (MOBILE ACCESSIBLE) -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-800/80 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Preset Experiments</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="loadPreset('standard')" class="p-2.5 rounded-xl bg-navy-900 hover:bg-slate-800 border border-slate-800 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-purple-300">Standard 9-to-5</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">$30/hr • 40 hrs • $3,000 exp</div>
+                        </button>
+                        <button onclick="loadPreset('parttime')" class="p-2.5 rounded-xl bg-navy-900 hover:bg-slate-800 border border-slate-800 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-cyan-300">Part-Time Freedom</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">$45/hr • 20 hrs • $2,200 exp</div>
+                        </button>
+                        <button onclick="loadPreset('hustle')" class="p-2.5 rounded-xl bg-navy-900 hover:bg-slate-800 border border-slate-800 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-emerald-300">High Income Hustle</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">$65/hr • 55 hrs • $4,500 exp</div>
+                        </button>
+                        <button onclick="loadPreset('fire')" class="p-2.5 rounded-xl bg-navy-900 hover:bg-slate-800 border border-slate-800 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-amber-300">Lean Frugal Life</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">$25/hr • 30 hrs • $1,200 exp</div>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL: CHARTS & INSIGHTS (7 COLS) -->
+            <div class="lg:col-span-7 space-y-5">
+
+                <!-- INSIGHT & ALERT BANNER -->
+                <div id="insightBanner" class="glass-card rounded-2xl p-4 sm:p-5 border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-navy-900 to-navy-900 relative">
+                    <div class="flex items-start space-x-3.5">
+                        <div id="insightIconBox" class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/30 mt-0.5">
+                            <i id="insightIcon" class="fa-solid fa-lightbulb text-base"></i>
+                        </div>
+                        <div class="space-y-1 pr-2">
+                            <h4 id="insightTitle" class="text-sm font-bold text-white">Scenario Analysis</h4>
+                            <p id="insightText" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Loading dynamic scenario insights...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHARTS ROW 1: MONTHLY CASH FLOW & TIME ALLOCATION -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <!-- Chart 1: Cash Breakdown Bar -->
+                    <div class="glass-card rounded-2xl p-4 border border-slate-800/80 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i class="fa-solid fa-chart-column text-cyan-400"></i>
+                                <span>Monthly Cash Flow</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-mono">USD ($)</span>
+                        </div>
+                        <div class="relative h-52 w-full flex items-center justify-center">
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: 168-Hour Time Allocation Doughnut -->
+                    <div class="glass-card rounded-2xl p-4 border border-slate-800/80 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i class="fa-solid fa-chart-pie text-purple-400"></i>
+                                <span>Weekly 168h Allocation</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-mono">Hours / Week</span>
+                        </div>
+                        <div class="relative h-52 w-full flex items-center justify-center">
+                            <canvas id="timeAllocationChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CHARTS ROW 2: 3-YEAR WEALTH TRAJECTORY PROJECTION -->
+                <div class="glass-card rounded-2xl p-5 border border-slate-800/80 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i>
+                                <span>36-Month Accumulated Net Savings Trajectory</span>
+                            </h4>
+                            <p class="text-[11px] text-slate-400">Assumes constant monthly leftover savings with zero growth vs. 5% annual investment returns.</p>
+                        </div>
+                        <div class="flex items-center space-x-2 text-xs">
+                            <span class="text-slate-400">3-Yr Reserve:</span>
+                            <span id="threeYearTotalText" class="font-bold text-emerald-400 text-sm">$41,040</span>
+                        </div>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="trajectoryChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- BASELINE VS CURRENT SCENARIO COMPARISON PANEL -->
+        <div id="comparisonPanel" class="glass-card rounded-2xl p-5 border border-slate-800/80 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-code-compare text-cyan-400"></i>
+                        <span>Scenario Comparative Matrix</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Comparing your live edits against your locked baseline scenario</p>
+                </div>
+                <div id="baselineStatusBadge" class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 font-mono">
+                    Baseline: Not Locked (Click 'Lock Current' above to freeze a comparison target)
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-navy-950/80 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="p-3">Metric</th>
+                            <th class="p-3">Baseline Scenario</th>
+                            <th class="p-3">Current Active Scenario</th>
+                            <th class="p-3 text-right">Net Delta / Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium">
+                        <tr>
+                            <td class="p-3 text-slate-200">Hourly Rate & Work Hours</td>
+                            <td id="compBasePayHours" class="p-3 font-mono text-slate-400">$30.00/hr • 35 hrs/wk</td>
+                            <td id="compCurrPayHours" class="p-3 font-mono text-white">$30.00/hr • 35 hrs/wk</td>
+                            <td id="deltaPayHours" class="p-3 font-mono text-right text-slate-400">--</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-slate-200">Gross Monthly Income</td>
+                            <td id="compBaseGross" class="p-3 font-mono text-slate-400">$4,550</td>
+                            <td id="compCurrGross" class="p-3 font-mono text-white">$4,550</td>
+                            <td id="deltaGrossTable" class="p-3 font-mono text-right text-slate-400">$0</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-slate-200">Estimated Net Monthly Savings</td>
+                            <td id="compBaseNet" class="p-3 font-mono text-slate-400">$1,140</td>
+                            <td id="compCurrNet" class="p-3 font-mono text-white">$1,140</td>
+                            <td id="deltaNetTable" class="p-3 font-mono text-right text-slate-400">$0</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-slate-200">Annual Work Hours Required</td>
+                            <td id="compBaseAnnualWork" class="p-3 font-mono text-slate-400">1,820 hrs/yr</td>
+                            <td id="compCurrAnnualWork" class="p-3 font-mono text-white">1,820 hrs/yr</td>
+                            <td id="deltaAnnualWorkTable" class="p-3 font-mono text-right text-slate-400">0 hrs</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-slate-200">Weekly Free Hours</td>
+                            <td id="compBaseFreeHours" class="p-3 font-mono text-slate-400">63 hrs/wk</td>
+                            <td id="compCurrFreeHours" class="p-3 font-mono text-white">63 hrs/wk</td>
+                            <td id="deltaFreeHoursTable" class="p-3 font-mono text-right text-slate-400">0 hrs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DISCLAIMERS & METHODOLOGY FOOTER NOTE -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-800/80 text-xs text-slate-400 space-y-2">
+            <div class="flex items-center space-x-2 text-slate-300 font-semibold">
+                <i class="fa-solid fa-circle-info text-cyan-400"></i>
+                <span>Calculation Methodology & Portfolio Disclaimers</span>
+            </div>
+            <p class="leading-relaxed">
+                • <strong>Gross Monthly Income Formula:</strong> <code class="bg-navy-950 px-1.5 py-0.5 rounded text-cyan-300">(Hourly Rate × Hours Worked per Week × 52 Weeks) ÷ 12 Months</code>.
+            </p>
+            <p class="leading-relaxed">
+                • <strong>Net Income Estimation:</strong> Net estimates apply a user-adjusted effective tax & deduction rate (default 20%). Actual take-home pay depends on specific local tax brackets, state taxes, healthcare withholdings, retirement (401k) contributions, and employee benefits.
+            </p>
+            <p class="leading-relaxed">
+                • <strong>168-Hour Weekly Allocation:</strong> Total weekly time is strictly 168 hours. Free hours represent the remainder after subtracting weekly work hours and daily essential routines (sleep, cooking, commute, personal care).
+            </p>
+            <p class="leading-relaxed text-slate-500 italic">
+                Notice: This simulator is an educational modeling tool designed for quantitative reasoning and software portfolio demonstration. It does not constitute formal financial, tax, or legal advice.
+            </p>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800/80 py-6 bg-navy-950 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                <span>What If? — Life Decision Simulator</span> • Developed as an Interactive Portfolio Project
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-slate-400">Built with HTML5, Tailwind CSS, & Chart.js</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TOAST NOTIFICATION POPUP -->
+    <div id="toast" class="fixed bottom-5 right-5 translate-y-20 opacity-0 transition-all duration-300 bg-purple-600 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 z-50">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toastMsg">Scenario copied to clipboard!</span>
+    </div>
+
+    <script>
+        // GLOBAL STATE MANAGEMENT
+        const state = {
+            pay: 30,
+            hours: 35,
+            expenses: 2500,
+            taxRate: 20,
+            sleepHoursPerWeek: 70, // 10h total/day (8h sleep + 2h commute/essentials)
+            baseline: null
+        };
+
+        // PRESET DATA DEFINITIONS
+        const PRESETS = {
+            standard: { pay: 30, hours: 40, expenses: 3000, taxRate: 20, sleepHoursPerWeek: 70 },
+            parttime: { pay: 45, hours: 20, expenses: 2200, taxRate: 18, sleepHoursPerWeek: 70 },
+            hustle:   { pay: 65, hours: 55, expenses: 4500, taxRate: 28, sleepHoursPerWeek: 63 },
+            fire:     { pay: 25, hours: 30, expenses: 1200, taxRate: 15, sleepHoursPerWeek: 70 }
+        };
+
+        // CHART INSTANCES
+        let cashFlowChartInstance = null;
+        let timeAllocationChartInstance = null;
+        let trajectoryChartInstance = null;
+
+        // HELPER: Format Currency
+        function formatMoney(amount, showCents = false) {
+            const isNegative = amount < 0;
+            const absVal = Math.abs(amount);
+            const formatted = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: showCents ? 2 : 0,
+                minimumFractionDigits: showCents ? 2 : 0
+            }).format(absVal);
+
+            return isNegative ? `-${formatted}` : formatted;
+        }
+
+        // CORE CALCULATIONS ENGINE
+        function calculateMetrics(s) {
+            const annualGross = s.pay * s.hours * 52;
+            const monthlyGross = annualGross / 12;
+            const monthlyTax = monthlyGross * (s.taxRate / 100);
+            const monthlyNetIncome = monthlyGross - monthlyTax;
+            const monthlyLeftover = monthlyNetIncome - s.expenses;
+            
+            const annualWorkHours = s.hours * 52;
+            const totalWeeklyHours = 168;
+            const weeklyFreeHours = Math.max(0, totalWeeklyHours - s.hours - s.sleepHoursPerWeek);
+            const freeTimePercentage = (weeklyFreeHours / totalWeeklyHours) * 100;
+            const savingsRate = monthlyNetIncome > 0 ? (monthlyLeftover / monthlyNetIncome) * 100 : 0;
+            const netHourlyProfit = s.hours > 0 ? (monthlyLeftover * 12) / annualWorkHours : 0;
+
+            return {
+                annualGross,
+                monthlyGross,
+                monthlyTax,
+                monthlyNetIncome,
+                monthlyLeftover,
+                annualWorkHours,
+                weeklyFreeHours,
+                freeTimePercentage,
+                savingsRate,
+                netHourlyProfit
+            };
+        }
+
+        // UPDATE UI FUNCTION
+        function updateUI() {
+            // Get current calculations
+            const metrics = calculateMetrics(state);
+
+            // 1. Synchronize Slider & Input Controls Values
+            document.getElementById('inputPay').value = state.pay;
+            document.getElementById('numPay').value = state.pay;
+
+            document.getElementById('inputHours').value = state.hours;
+            document.getElementById('numHours').value = state.hours;
+
+            document.getElementById('inputExpenses').value = state.expenses;
+            document.getElementById('numExpenses').value = state.expenses;
+
+            document.getElementById('inputTax').value = state.taxRate;
+            document.getElementById('taxDisplayValue').innerText = `${state.taxRate}%`;
+
+            document.getElementById('inputSleep').value = state.sleepHoursPerWeek;
+            const dailyEssentialsHours = (state.sleepHoursPerWeek / 7).toFixed(1);
+            document.getElementById('sleepDisplayValue').innerText = `${state.sleepHoursPerWeek} hrs/wk (${dailyEssentialsHours}h/day)`;
+
+            // 2. Update Metric Cards
+            document.getElementById('cardGrossMonthly').innerText = formatMoney(metrics.monthlyGross);
+            document.getElementById('cardGrossAnnual').innerText = `${formatMoney(metrics.annualGross)} / yr`;
+
+            const cardLeftoverEl = document.getElementById('cardLeftover');
+            const cardLeftoverContainer = document.getElementById('cardLeftoverContainer');
+            const leftoverIconBg = document.getElementById('leftoverIconBg');
+            const leftoverIcon = document.getElementById('leftoverIcon');
+
+            cardLeftoverEl.innerText = formatMoney(metrics.monthlyLeftover);
+
+            // Handle Negative Leftover Styling
+            if (metrics.monthlyLeftover < 0) {
+                cardLeftoverEl.className = "text-2xl sm:text-3xl font-extrabold text-rose-500 mt-1 animate-pulse";
+                cardLeftoverContainer.classList.add('glow-red');
+                leftoverIconBg.className = "w-10 h-10 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30";
+                leftoverIcon.className = "fa-solid fa-triangle-exclamation text-lg";
+                document.getElementById('cardSavingsRate').innerText = "DEFICIT WARNING";
+                document.getElementById('cardSavingsRate').className = "text-rose-400 font-bold";
+            } else {
+                cardLeftoverEl.className = "text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1";
+                cardLeftoverContainer.classList.remove('glow-red');
+                leftoverIconBg.className = "w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20";
+                leftoverIcon.className = "fa-solid fa-piggy-bank text-lg";
+                document.getElementById('cardSavingsRate').innerText = `Savings Rate: ${metrics.savingsRate.toFixed(1)}%`;
+                document.getElementById('cardSavingsRate').className = "text-slate-400 font-medium";
+            }
+
+            document.getElementById('cardFreeHours').innerText = `${Math.round(metrics.weeklyFreeHours)} hrs/wk`;
+            document.getElementById('cardFreePercent').innerText = `${metrics.freeTimePercentage.toFixed(1)}% of total week`;
+
+            document.getElementById('cardNetHourly').innerText = `${formatMoney(metrics.netHourlyProfit, true)} / hr`;
+
+            // 3. Update Insights Engine
+            renderInsight(metrics);
+
+            // 4. Update Comparative Table
+            updateComparisonTable(metrics);
+
+            // 5. Render Charts
+            renderCharts(metrics);
+        }
+
+        // QUANTITATIVE INSIGHTS GENERATOR
+        function renderInsight(m) {
+            const insightBanner = document.getElementById('insightBanner');
+            const insightIconBox = document.getElementById('insightIconBox');
+            const insightIcon = document.getElementById('insightIcon');
+            const insightTitle = document.getElementById('insightTitle');
+            const insightText = document.getElementById('insightText');
+
+            if (m.monthlyLeftover < 0) {
+                // Deficit Scenario
+                const deficit = Math.abs(m.monthlyLeftover);
+                const requiredPayIncrease = (deficit * 12) / (state.hours * 52 * (1 - state.taxRate / 100));
+                
+                insightBanner.className = "glass-card rounded-2xl p-4 sm:p-5 border border-rose-500/40 bg-gradient-to-r from-rose-950/40 via-navy-900 to-navy-900 relative glow-red";
+                insightIconBox.className = "w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/30 mt-0.5";
+                insightIcon.className = "fa-solid fa-triangle-exclamation text-base";
+                insightTitle.innerText = "Monthly Budget Deficit Alert";
+                insightText.innerHTML = `Your monthly living expenses exceed net income by <strong class="text-rose-400">${formatMoney(deficit)}</strong>. To break even, you must raise your wage by <strong class="text-white">${formatMoney(requiredPayIncrease, true)}/hr</strong>, work <strong class="text-white">${Math.ceil((deficit / (state.pay * (1 - state.taxRate/100))) * 12 / 52)} more hours/wk</strong>, or cut monthly expenses.`;
+            } else if (state.baseline) {
+                // Comparison Scenario
+                const baseM = calculateMetrics(state.baseline);
+                const deltaLeftover = m.monthlyLeftover - baseM.monthlyLeftover;
+                const deltaFreeHours = m.weeklyFreeHours - baseM.weeklyFreeHours;
+
+                insightBanner.className = "glass-card rounded-2xl p-4 sm:p-5 border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-navy-900 to-navy-900 relative glow-purple";
+                insightIconBox.className = "w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/30 mt-0.5";
+                insightIcon.className = "fa-solid fa-code-compare text-base";
+                insightTitle.innerText = "Delta vs. Locked Baseline";
+
+                let incomeText = deltaLeftover >= 0 
+                    ? `<span class="text-emerald-400 font-bold">+${formatMoney(deltaLeftover)}/mo net cash</span>` 
+                    : `<span class="text-rose-400 font-bold">${formatMoney(deltaLeftover)}/mo net cash</span>`;
+                
+                let freeText = deltaFreeHours >= 0 
+                    ? `<span class="text-purple-300 font-bold">+${Math.round(deltaFreeHours)} hours/wk free time</span>` 
+                    : `<span class="text-amber-400 font-bold">${Math.round(deltaFreeHours)} hours/wk free time</span>`;
+
+                const annualFreeDaysGained = Math.abs((deltaFreeHours * 52) / 24).toFixed(1);
+
+                insightText.innerHTML = `Compared to baseline, this scenario yields ${incomeText} while trading ${freeText}. Over 1 full year, this change corresponds to <strong class="text-white">${annualFreeDaysGained} full 24-hour days</strong> of ${deltaFreeHours >= 0 ? 'gained freedom' : 'additional labor'}.`;
+            } else {
+                // Default Positive Scenario
+                insightBanner.className = "glass-card rounded-2xl p-4 sm:p-5 border border-cyan-500/30 bg-gradient-to-r from-cyan-950/30 via-navy-900 to-navy-900 relative glow-blue";
+                insightIconBox.className = "w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0 border border-cyan-500/30 mt-0.5";
+                insightIcon.className = "fa-solid fa-lightbulb text-base";
+                insightTitle.innerText = "Financial Runway & Life Efficiency";
+
+                const monthsToSave10k = m.monthlyLeftover > 0 ? (10000 / m.monthlyLeftover).toFixed(1) : "N/A";
+                const yearlyFreeDays = ((m.weeklyFreeHours * 52) / 24).toFixed(0);
+
+                insightText.innerHTML = `At your current pace, you retain <strong class="text-emerald-400">${formatMoney(m.monthlyLeftover)}/month</strong> (${m.savingsRate.toFixed(1)}% savings rate). It will take <strong class="text-cyan-300">${monthsToSave10k} months</strong> to accumulate a $10,000 emergency fund. You have <strong class="text-purple-300">${yearlyFreeDays} days worth of personal free time</strong> each year.`;
+            }
+        }
+
+        // COMPARISON TABLE UPDATER
+        function updateComparisonTable(currM) {
+            const statusBadge = document.getElementById('baselineStatusBadge');
+
+            if (!state.baseline) {
+                statusBadge.innerText = "Baseline: Not Locked (Click 'Lock Current as Baseline' above)";
+                statusBadge.className = "text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 font-mono";
+
+                document.getElementById('compBasePayHours').innerText = "--";
+                document.getElementById('compBaseGross').innerText = "--";
+                document.getElementById('compBaseNet').innerText = "--";
+                document.getElementById('compBaseAnnualWork').innerText = "--";
+                document.getElementById('compBaseFreeHours').innerText = "--";
+
+                document.getElementById('compCurrPayHours').innerText = `$${state.pay}/hr • ${state.hours} hrs/wk`;
+                document.getElementById('compCurrGross').innerText = formatMoney(currM.monthlyGross);
+                document.getElementById('compCurrNet').innerText = formatMoney(currM.monthlyLeftover);
+                document.getElementById('compCurrAnnualWork').innerText = `${currM.annualWorkHours.toLocaleString()} hrs/yr`;
+                document.getElementById('compCurrFreeHours').innerText = `${Math.round(currM.weeklyFreeHours)} hrs/wk`;
+
+                document.getElementById('deltaPayHours').innerText = "--";
+                document.getElementById('deltaGrossTable').innerText = "--";
+                document.getElementById('deltaNetTable').innerText = "--";
+                document.getElementById('deltaAnnualWorkTable').innerText = "--";
+                document.getElementById('deltaFreeHoursTable').innerText = "--";
+
+                // Hide top card deltas
+                ['deltaGross', 'deltaLeftover', 'deltaFreeHours', 'deltaNetHourly'].forEach(id => {
+                    document.getElementById(id).classList.add('hidden');
+                });
+                return;
+            }
+
+            const baseM = calculateMetrics(state.baseline);
+            statusBadge.innerText = `Baseline Locked: $${state.baseline.pay}/hr • ${state.baseline.hours}h/wk • $${state.baseline.expenses} exp`;
+            statusBadge.className = "text-xs px-2.5 py-1 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-800/60 font-mono";
+
+            // Baseline values
+            document.getElementById('compBasePayHours').innerText = `$${state.baseline.pay}/hr • ${state.baseline.hours} hrs/wk`;
+            document.getElementById('compBaseGross').innerText = formatMoney(baseM.monthlyGross);
+            document.getElementById('compBaseNet').innerText = formatMoney(baseM.monthlyLeftover);
+            document.getElementById('compBaseAnnualWork').innerText = `${baseM.annualWorkHours.toLocaleString()} hrs/yr`;
+            document.getElementById('compBaseFreeHours').innerText = `${Math.round(baseM.weeklyFreeHours)} hrs/wk`;
+
+            // Current values
+            document.getElementById('compCurrPayHours').innerText = `$${state.pay}/hr • ${state.hours} hrs/wk`;
+            document.getElementById('compCurrGross').innerText = formatMoney(currM.monthlyGross);
+            document.getElementById('compCurrNet').innerText = formatMoney(currM.monthlyLeftover);
+            document.getElementById('compCurrAnnualWork').innerText = `${currM.annualWorkHours.toLocaleString()} hrs/yr`;
+            document.getElementById('compCurrFreeHours').innerText = `${Math.round(currM.weeklyFreeHours)} hrs/wk`;
+
+            // Calculate Deltas
+            const deltaGrossVal = currM.monthlyGross - baseM.monthlyGross;
+            const deltaNetVal = currM.monthlyLeftover - baseM.monthlyLeftover;
+            const deltaAnnualWorkVal = currM.annualWorkHours - baseM.annualWorkHours;
+            const deltaFreeHoursVal = currM.weeklyFreeHours - baseM.weeklyFreeHours;
+
+            // Render Deltas in Table
+            renderDeltaCell('deltaGrossTable', deltaGrossVal, true);
+            renderDeltaCell('deltaNetTable', deltaNetVal, true);
+            renderDeltaCell('deltaAnnualWorkTable', deltaAnnualWorkVal, false, 'hrs');
+            renderDeltaCell('deltaFreeHoursTable', deltaFreeHoursVal, false, 'hrs', true);
+
+            // Render Top Cards Deltas
+            updateTopCardDelta('deltaGross', deltaGrossVal, true);
+            updateTopCardDelta('deltaLeftover', deltaNetVal, true);
+            updateTopCardDelta('deltaFreeHours', deltaFreeHoursVal, false, 'hrs', true);
+            updateTopCardDelta('deltaNetHourly', currM.netHourlyProfit - baseM.netHourlyProfit, true, '', false, true);
+        }
+
+        function renderDeltaCell(elementId, val, isCurrency = false, unit = '', positiveIsGood = true) {
+            const el = document.getElementById(elementId);
+            if (val === 0) {
+                el.innerText = "$0";
+                el.className = "p-3 font-mono text-right text-slate-500";
+                return;
+            }
+
+            const formattedVal = isCurrency ? formatMoney(val) : `${val > 0 ? '+' : ''}${Math.round(val)} ${unit}`;
+            const isPositiveGood = positiveIsGood ? val > 0 : val < 0;
+
+            if (isPositiveGood) {
+                el.innerText = `${val > 0 && isCurrency ? '+' : ''}${formattedVal}`;
+                el.className = "p-3 font-mono text-right text-emerald-400 font-bold";
+            } else {
+                el.innerText = `${val > 0 && isCurrency ? '+' : ''}${formattedVal}`;
+                el.className = "p-3 font-mono text-right text-rose-400 font-bold";
+            }
+        }
+
+        function updateTopCardDelta(elementId, val, isCurrency = false, unit = '', positiveIsGood = true, showCents = false) {
+            const el = document.getElementById(elementId);
+            if (val === 0) {
+                el.classList.add('hidden');
+                return;
+            }
+
+            el.classList.remove('hidden');
+            const formattedVal = isCurrency ? formatMoney(val, showCents) : `${val > 0 ? '+' : ''}${Math.round(val)} ${unit}`;
+            const isPositiveGood = positiveIsGood ? val > 0 : val < 0;
+
+            if (isPositiveGood) {
+                el.innerText = `${val > 0 && isCurrency ? '+' : ''}${formattedVal}`;
+                el.className = "text-xs font-semibold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60";
+            } else {
+                el.innerText = `${val > 0 && isCurrency ? '+' : ''}${formattedVal}`;
+                el.className = "text-xs font-semibold px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800/60";
+            }
+        }
+
+        // CHART.JS RENDERING ROUTINES
+        function renderCharts(m) {
+            // Chart Defaults Config
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'Inter';
+
+            // 1. Monthly Cash Flow Chart
+            const ctxCash = document.getElementById('cashFlowChart').getContext('2d');
+            const cashData = [
+                m.monthlyGross,
+                m.monthlyTax,
+                state.expenses,
+                Math.max(0, m.monthlyLeftover)
+            ];
+
+            if (cashFlowChartInstance) {
+                cashFlowChartInstance.data.datasets[0].data = cashData;
+                cashFlowChartInstance.data.datasets[0].backgroundColor = [
+                    '#38bdf8', // Gross
+                    '#a855f7', // Tax
+                    '#f43f5e', // Expenses
+                    m.monthlyLeftover < 0 ? '#ef4444' : '#10b981' // Leftover
+                ];
+                cashFlowChartInstance.update();
+            } else {
+                cashFlowChartInstance = new Chart(ctxCash, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Gross', 'Est. Tax', 'Expenses', 'Net Cash'],
+                        datasets: [{
+                            data: cashData,
+                            backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e', '#10b981'],
+                            borderRadius: 6,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${formatMoney(context.raw)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: {
+                                    callback: function(value) { return '$' + value; }
+                                }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 2. Weekly Time Allocation Donut Chart
+            const ctxTime = document.getElementById('timeAllocationChart').getContext('2d');
+            const timeData = [
+                state.hours,
+                state.sleepHoursPerWeek,
+                Math.max(0, m.weeklyFreeHours)
+            ];
+
+            if (timeAllocationChartInstance) {
+                timeAllocationChartInstance.data.datasets[0].data = timeData;
+                timeAllocationChartInstance.update();
+            } else {
+                timeAllocationChartInstance = new Chart(ctxTime, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Work Hours', 'Sleep & Essentials', 'Discretionary Free Time'],
+                        datasets: [{
+                            data: timeData,
+                            backgroundColor: ['#6366f1', '#334155', '#a855f7'],
+                            borderWidth: 2,
+                            borderColor: '#0c1120'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, font: { size: 10 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw} hrs/wk`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
+
+            // 3. 3-Year Savings Trajectory Chart
+            const ctxTrajectory = document.getElementById('trajectoryChart').getContext('2d');
+            const labels36 = Array.from({length: 37}, (_, i) => i === 0 ? 'Start' : `Mo ${i}`);
+            
+            // Standard Cash trajectory (0% interest)
+            const rawTrajectory = labels36.map((_, month) => month * m.monthlyLeftover);
+            
+            // Invested Trajectory (assuming 5% annual compound return)
+            const monthlyRate = 0.05 / 12;
+            const investedTrajectory = labels36.map((_, month) => {
+                if (month === 0) return 0;
+                let total = 0;
+                for (let i = 0; i < month; i++) {
+                    total = (total + m.monthlyLeftover) * (1 + monthlyRate);
+                }
+                return Math.round(total);
+            });
+
+            const total3Yr = rawTrajectory[36];
+            document.getElementById('threeYearTotalText').innerText = formatMoney(total3Yr);
+            document.getElementById('threeYearTotalText').className = total3Yr < 0 ? "font-bold text-rose-500 text-sm" : "font-bold text-emerald-400 text-sm";
+
+            if (trajectoryChartInstance) {
+                trajectoryChartInstance.data.labels = labels36;
+                trajectoryChartInstance.data.datasets[0].data = rawTrajectory;
+                trajectoryChartInstance.data.datasets[1].data = investedTrajectory;
+                trajectoryChartInstance.update();
+            } else {
+                trajectoryChartInstance = new Chart(ctxTrajectory, {
+                    type: 'line',
+                    data: {
+                        labels: labels36,
+                        datasets: [
+                            {
+                                label: 'Cash Reserve (0% Growth)',
+                                data: rawTrajectory,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                                fill: true,
+                                tension: 0.2,
+                                borderWidth: 2,
+                                pointRadius: 0
+                            },
+                            {
+                                label: 'Invested Reserve (5% Annual Return)',
+                                data: investedTrajectory,
+                                borderColor: '#38bdf8',
+                                borderDash: [4, 4],
+                                fill: false,
+                                tension: 0.2,
+                                borderWidth: 2,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { boxWidth: 12, font: { size: 11 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${formatMoney(context.raw)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: {
+                                    callback: function(value) { return '$' + value.toLocaleString(); }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { maxTicksLimit: 12 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // EVENT LISTENERS BINDING
+        function bindEvents() {
+            // Slider 1: Hourly Pay Rate
+            const inputPay = document.getElementById('inputPay');
+            const numPay = document.getElementById('numPay');
+            
+            inputPay.addEventListener('input', (e) => {
+                state.pay = parseFloat(e.target.value) || 0;
+                numPay.value = state.pay;
+                updateUI();
+            });
+            numPay.addEventListener('change', (e) => {
+                state.pay = Math.max(1, parseFloat(e.target.value) || 1);
+                inputPay.value = state.pay;
+                updateUI();
+            });
+
+            // Slider 2: Weekly Hours Worked
+            const inputHours = document.getElementById('inputHours');
+            const numHours = document.getElementById('numHours');
+
+            inputHours.addEventListener('input', (e) => {
+                state.hours = parseFloat(e.target.value) || 0;
+                numHours.value = state.hours;
+                updateUI();
+            });
+            numHours.addEventListener('change', (e) => {
+                state.hours = Math.max(1, Math.min(100, parseFloat(e.target.value) || 1));
+                inputHours.value = state.hours;
+                updateUI();
+            });
+
+            // Slider 3: Monthly Expenses
+            const inputExpenses = document.getElementById('inputExpenses');
+            const numExpenses = document.getElementById('numExpenses');
+
+            inputExpenses.addEventListener('input', (e) => {
+                state.expenses = parseFloat(e.target.value) || 0;
+                numExpenses.value = state.expenses;
+                updateUI();
+            });
+            numExpenses.addEventListener('change', (e) => {
+                state.expenses = Math.max(0, parseFloat(e.target.value) || 0);
+                inputExpenses.value = state.expenses;
+                updateUI();
+            });
+
+            // Slider 4: Tax Rate
+            document.getElementById('inputTax').addEventListener('input', (e) => {
+                state.taxRate = parseFloat(e.target.value) || 0;
+                updateUI();
+            });
+
+            // Slider 5: Sleep / Essentials Hours
+            document.getElementById('inputSleep').addEventListener('input', (e) => {
+                state.sleepHoursPerWeek = parseFloat(e.target.value) || 0;
+                updateUI();
+            });
+        }
+
+        // PRESET LOADER
+        function loadPreset(presetKey) {
+            if (PRESETS[presetKey]) {
+                const p = PRESETS[presetKey];
+                state.pay = p.pay;
+                state.hours = p.hours;
+                state.expenses = p.expenses;
+                state.taxRate = p.taxRate;
+                state.sleepHoursPerWeek = p.sleepHoursPerWeek;
+                updateUI();
+                showToast(`Loaded "${presetKey.toUpperCase()}" Preset!`);
+            }
+        }
+
+        // RESET FUNCTION
+        function resetToDefaults() {
+            state.pay = 30;
+            state.hours = 35;
+            state.expenses = 2500;
+            state.taxRate = 20;
+            state.sleepHoursPerWeek = 70;
+            state.baseline = null;
+
+            document.getElementById('clearBaselineBtn').classList.add('hidden');
+            updateUI();
+            showToast("Reset to default parameters!");
+        }
+
+        // BASELINE SCENARIO LOCK / UNLOCK
+        function setAsBaseline() {
+            state.baseline = { ...state };
+            document.getElementById('clearBaselineBtn').classList.remove('hidden');
+            updateUI();
+            showToast("Current scenario locked as Baseline!");
+        }
+
+        function clearBaseline() {
+            state.baseline = null;
+            document.getElementById('clearBaselineBtn').classList.add('hidden');
+            updateUI();
+            showToast("Baseline unlocked.");
+        }
+
+        // SHARE / COPY SUMMARY
+        function shareScenario() {
+            const m = calculateMetrics(state);
+            const summaryText = `What If? Life Decision Scenario Summary:
+• Pay Rate: $${state.pay}/hr @ ${state.hours} hrs/week
+• Monthly Expenses: $${state.expenses.toLocaleString()}
+• Gross Monthly Income: ${formatMoney(m.monthlyGross)}
+• Net Monthly Savings: ${formatMoney(m.monthlyLeftover)}
+• Weekly Free Time: ${Math.round(m.weeklyFreeHours)} hrs/wk`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(summaryText).then(() => {
+                    showToast("Scenario summary copied to clipboard!");
+                }).catch(() => {
+                    copyFallback(summaryText);
+                });
+            } else {
+                copyFallback(summaryText);
+            }
+        }
+
+        function copyFallback(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast("Scenario summary copied to clipboard!");
+        }
+
+        // TOAST NOTIFICATION
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // INITIALIZATION ON WINDOW LOAD
+        window.onload = function() {
+            bindEvents();
+            updateUI();
+        };
+    </script>
+</body>
+</html>
